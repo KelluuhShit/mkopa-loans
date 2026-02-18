@@ -157,16 +157,10 @@ const Home = () => {
           <h3 className="text-3xl font-bold mb-4">Okoa Chapaa</h3>
           <p className="mb-10">Your trusted digital loan partner in Kenya. Fast, secure, and reliable loans when you need them most.</p>
           <div className="grid md:grid-cols-3 gap-8 text-left max-w-4xl mx-auto">
-            <div>
-              <strong className="block mb-3">Quick Links</strong>
-              <a href="#about" className="block hover:text-accent">About Us</a>
-              <a href="#how" className="block hover:text-accent">How It Works</a>
-              <a href="#" className="block hover:text-accent">FAQs</a>
-            </div>
+            
             <div>
               <strong className="block mb-3">Legal</strong>
-              <a href="#" className="block hover:text-accent">Terms of Service</a>
-              <a href="#" className="block hover:text-accent">Privacy Policy</a>
+              
             </div>
             <div>
               <strong className="block mb-3">Contact Us</strong>

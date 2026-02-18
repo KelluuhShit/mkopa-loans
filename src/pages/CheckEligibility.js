@@ -223,12 +223,7 @@ const CheckEligibility = () => {
                 )}
               </button>
 
-              <p className="text-xs sm:text-sm text-gray-600 mt-8 text-center">
-                By continuing, you agree to our{' '}
-                <a href="#" className="text-secondary underline hover:text-primary">Terms</a>{' '}
-                and{' '}
-                <a href="#" className="text-secondary underline hover:text-primary">Privacy Policy</a>.
-              </p>
+              
             </form>
 
             <div className="mt-10 text-center">

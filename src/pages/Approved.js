@@ -1,6 +1,6 @@
 // approved.js
 import React, { useState, useEffect } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 const Approved = ({ onBack }) => {
   const [userData, setUserData] = useState({});
@@ -41,7 +41,7 @@ const Approved = ({ onBack }) => {
   }
 
   const loanAmount = (userData.requestedAmount || userData.amount || 0).toLocaleString();
-  const mpesaNumber = `0${userData.mpesaPhone || ''}`;
+  
   const securityFee = (userData.securityFee || userData.fee || 0).toLocaleString();
 
   return (
