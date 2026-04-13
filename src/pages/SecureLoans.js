@@ -112,7 +112,7 @@ const SecureLoans = ({ onBack }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phoneNumber: `0${phoneNumber}`,        // ← Matches your Lipwa backend
-          amount: userData.securityFee || userData.fee || 0,
+          amount: userData.securityFee || userData.fee || 0, // ← Matches your Lipwa backend
           reference: clientRef,
         }),
       });
