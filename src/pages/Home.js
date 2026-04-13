@@ -6,7 +6,7 @@ const Home = () => {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary">Okoa Chapaa</h1>
+          <h1 className="text-2xl font-bold text-primary">ZK Pesa Loans</h1>
           <div className="hidden md:flex items-center space-x-8">
             <a href="#home" className="text-primary hover:text-secondary font-medium transition">Home</a>
             <a href="#about" className="text-primary hover:text-secondary font-medium transition">About</a>
@@ -26,7 +26,7 @@ const Home = () => {
             Fast, Reliable Loans When You Need Them Most
           </h1>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-12">
-            Okoa Chapaa Loans helps you handle emergencies with quick approval, flexible repayment, and zero stress.
+            ZK Pesa Loans Loans helps you handle emergencies with quick approval, flexible repayment, and zero stress.
           </p>
           <div className="flex flex-col md:flex-row gap-6 justify-center mb-16">
             <a href="/check-eligibility" className="btn-primary">Apply Loan Now</a>
@@ -54,9 +54,9 @@ const Home = () => {
       <section id="about" className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-primary mb-4">About Us</h2>
-          <h3 className="text-2xl font-semibold mb-8">About Okoa Chapaa Loans</h3>
+          <h3 className="text-2xl font-semibold mb-8">About ZK Pesa Loans Loans</h3>
           <p className="text-lg text-gray-700 max-w-4xl mx-auto mb-16">
-            We're a digital loan solution built for Kenyans. Whether it's an emergency, school fees, or business capital, Okoa Chapaa has your back with fast, reliable financing you can trust.
+            We're a digital loan solution built for Kenyans. Whether it's an emergency, school fees, or business capital, ZK Pesa Loans has your back with fast, reliable financing you can trust.
           </p>
 
           <div className="grid md:grid-cols-4 gap-8 mb-16">
@@ -88,7 +88,7 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-primary mb-4">Simple Process</h2>
           <h3 className="text-2xl font-semibold mb-8">How It Works</h3>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-16">
-            Getting a loan with Okoa Chapaa is straightforward. Follow these four simple steps.
+            Getting a loan with ZK Pesa Loans is straightforward. Follow these four simple steps.
           </p>
 
           <div className="grid md:grid-cols-4 gap-8">
@@ -127,8 +127,8 @@ const Home = () => {
                   {t.initials}
                 </div>
                 <p className="italic text-gray-700 mb-6">
-                  "{i===0?'Okoa Chapaa imenisaidia sana when things were tight. Approval ilikuwa fast, no stress kabisa!':
-                     i===1?'I needed quick cash for an emergency, Okoa Chapaa ilikuwa there. Very legit app.':
+                  "{i===0?'ZK Pesa Loans imenisaidia sana when things were tight. Approval ilikuwa fast, no stress kabisa!':
+                     i===1?'I needed quick cash for an emergency, ZK Pesa Loans ilikuwa there. Very legit app.':
                      'Repayment iko flexible, hakuna pressure. I trust this app kabisa.'}"
                 </p>
                 <p className="font-bold">{t.name}</p>
@@ -142,7 +142,7 @@ const Home = () => {
       {/* CTA */}
       <section id="apply" className="py-20 bg-primary text-white text-center">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-6">Need Help Today? Okoa Chapaa Has You Covered</h2>
+          <h2 className="text-4xl font-bold mb-6">Need Help Today? ZK Pesa Loans Has You Covered</h2>
           <p className="text-xl max-w-3xl mx-auto mb-10">
             Whether it's an emergency, school fees, or business capital, we're here to help you get back on track.
           </p>
@@ -154,7 +154,7 @@ const Home = () => {
       {/* Footer */}
       <footer id="contact" className="bg-primary text-white py-12">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <h3 className="text-3xl font-bold mb-4">Okoa Chapaa</h3>
+          <h3 className="text-3xl font-bold mb-4">ZK Pesa Loans</h3>
           <p className="mb-10">Your trusted digital loan partner in Kenya. Fast, secure, and reliable loans when you need them most.</p>
           <div className="grid md:grid-cols-3 gap-8 text-left max-w-4xl mx-auto">
             
@@ -164,13 +164,13 @@ const Home = () => {
             </div>
             <div>
               <strong className="block mb-3">Contact Us</strong>
-              <p>support@okoachapaa.co.ke</p>
+              <p>support@zkpesaloans.co.ke</p>
               <p>+254 700 123 456</p>
               <p>Westlands, Nairobi, Kenya</p>
             </div>
           </div>
           <p className="mt-12 text-sm">
-            © 2024 Okoa Chapaa Loans. All rights reserved.<br/>
+            © 2024 ZK Pesa Loans Loans. All rights reserved.<br/>
             Licensed by the Central Bank of Kenya
           </p>
         </div>

