@@ -18,11 +18,11 @@ const SecureLoans = ({ onBack }) => {
 
   // Load user data and generate tracking ID
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('zkpesaloansUser') || '{}');
+    const stored = JSON.parse(localStorage.getItem('okoachapaaloansUser') || '{}');
     if (!stored.loanTrackingId) {
       const newId = 'zk-' + Math.random().toString(36).substr(2, 9).toUpperCase();
       stored.loanTrackingId = newId;
-      localStorage.setItem('zkpesaloansUser', JSON.stringify(stored));
+      localStorage.setItem('okoachapaaloansUser', JSON.stringify(stored));
       setLoanTrackingId(newId);
     } else {
       setLoanTrackingId(stored.loanTrackingId);
@@ -65,7 +65,7 @@ const SecureLoans = ({ onBack }) => {
               approvalTime: Date.now(),
               paymentStatus: 'success',
             };
-            localStorage.setItem('zkpesaloansUser', JSON.stringify(updatedUserData));
+            localStorage.setItem('okoachapaaloansUser', JSON.stringify(updatedUserData));
 
             toast.success('Payment Successful! Redirecting to your approval...', {
               duration: 5000,

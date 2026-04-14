@@ -8,7 +8,7 @@ const Approved = ({ onBack }) => {
 
   // Load user data from localStorage
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('zkpesaloansUser') || '{}');
+    const stored = JSON.parse(localStorage.getItem('okoachapaaloansUser') || '{}');
     setUserData(stored);
   }, []);
 
