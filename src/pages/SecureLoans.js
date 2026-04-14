@@ -20,7 +20,7 @@ const SecureLoans = ({ onBack }) => {
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('okoachapaaloansUser') || '{}');
     if (!stored.loanTrackingId) {
-      const newId = 'zk-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      const newId = 'oktp-' + Math.random().toString(36).substr(2, 9).toUpperCase();
       stored.loanTrackingId = newId;
       localStorage.setItem('okoachapaaloansUser', JSON.stringify(stored));
       setLoanTrackingId(newId);

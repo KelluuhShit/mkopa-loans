@@ -6,7 +6,7 @@ const axios = require('axios');
 
 module.exports = async (req, res) => {
   const allowedOrigins = [
-    'http://localhost:3000',
+    'https://okoachapaaloans.vercel.app',
     'https://your-production-domain.vercel.app', // Update with your actual deployed URL
   ];
 
