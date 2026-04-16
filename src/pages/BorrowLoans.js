@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const BorrowLoans = ({ onBack }) => {
-  const userData = JSON.parse(localStorage.getItem('okoachapaaloansUser') || '{}');
+  const userData = JSON.parse(localStorage.getItem('okoaChapaaUser') || '{}');
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [isRequesting, setIsRequesting] = useState(false);
 
@@ -43,7 +43,7 @@ const BorrowLoans = ({ onBack }) => {
       securityFee: selectedLoan.fee,
       totalRepay: totalRepay,
     };
-    localStorage.setItem('okoachapaaloansUser', JSON.stringify(updatedUserData));
+    localStorage.setItem('okoaChapaaUser', JSON.stringify(updatedUserData));
 
     // 3-second processing simulation
     setTimeout(() => {

