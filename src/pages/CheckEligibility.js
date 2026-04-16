@@ -147,7 +147,7 @@ const CheckEligibility = () => {
     <>
       <nav className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-          <h1 className="text-xl sm:text-2xl font-bold text-primary">Okoa Chapaa</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-primary">M-Kopa Loans</h1>
           <div className="hidden md:flex items-center space-x-8">
             <a href="/" className="text-primary hover:text-secondary font-medium transition">Home</a>
             <a href="/" className="text-primary hover:text-secondary font-medium transition">About</a>
